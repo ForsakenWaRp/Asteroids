@@ -4,6 +4,7 @@ import com.github.hanyaeger.api.entities.Collider;
 import nl.han.asteroids.entities.player.PlayerSpaceship;
 import nl.han.asteroids.entities.projectiles.Laser;
 import nl.han.asteroids.entities.enemy.BaseEnemy;
+import nl.han.asteroids.interfaces.Hittable;
 import java.util.List;
 
 /**
@@ -22,15 +23,19 @@ public class NormalState extends BasePlayerState {
     @Override
     public void onCollision(List<Collider> collidingObjects) {
         for (Collider col : collidingObjects) {
-            if (col instanceof Laser laser && laser.isEnemyLaser()) {
-                laser.remove();
-                player.destroy();
-                return;
+            player.onHitBy(col);
+            if (col instanceof Hittable hittable) {
+                hittable.onHitBy(player);
             }
-            if (col instanceof BaseEnemy) {
-                player.destroy();
-                return;
-            }
+        }
+    }
+
+    @Override
+    public void onHitBy(Collider collider) {
+        if (collider instanceof BaseEnemy) {
+            player.destroy();
+        } else if (collider instanceof Laser laser && laser.isEnemyLaser()) {
+            player.destroy();
         }
     }
 }

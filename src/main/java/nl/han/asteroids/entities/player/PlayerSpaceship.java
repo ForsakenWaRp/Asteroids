@@ -1,5 +1,7 @@
 package nl.han.asteroids.entities.player;
 
+import com.github.hanyaeger.api.TimerContainer;
+import com.github.hanyaeger.api.Timer;
 import com.github.hanyaeger.api.Coordinate2D;
 import com.github.hanyaeger.api.UpdateExposer;
 import com.github.hanyaeger.api.scenes.SceneBorder;
@@ -12,12 +14,14 @@ import com.github.hanyaeger.api.entities.Collider;
 import com.github.hanyaeger.api.entities.impl.DynamicSpriteEntity;
 import javafx.scene.input.GestureEvent;
 import javafx.scene.input.KeyCode;
-import nl.han.asteroids.AsteroidsGame;
+import nl.han.asteroids.interfaces.Hittable;
+import nl.han.asteroids.interfaces.PauseStateProvider;
 import nl.han.asteroids.config.GameConstants;
 import nl.han.asteroids.managers.ProjectileManager;
 import nl.han.asteroids.managers.SoundManager;
 import nl.han.asteroids.entities.player.states.PlayerState;
 import nl.han.asteroids.entities.player.states.InvulnerableState;
+import nl.han.asteroids.entities.player.states.NormalState;
 
 import java.util.List;
 import java.util.Random;
@@ -26,7 +30,7 @@ import java.util.Set;
 /**
  * Vertegenwoordigt het ruimteschip van de speler, gestuurd door een State Pattern.
  */
-public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener, UpdateExposer, SceneBorderCrossingWatcher, Collided, Collider {
+public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener, UpdateExposer, SceneBorderCrossingWatcher, Collided, Collider, TimerContainer, Hittable {
     
 
     private double currentFacingDirection = 0; 
@@ -35,24 +39,50 @@ public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener,
     private boolean isRotatingRight = false;
     
     private final ProjectileManager projectileManager;
-    private final AsteroidsGame asteroidsGame;
+    private final PauseStateProvider pauseStateProvider;
     private final Runnable onDeath;
-    private long lastShotTime = 0;
+    private Timer shootTimer;
+    private boolean canShoot = true;
     private double savedSpeed = 0;
 
     private PlayerState currentState;
 
-    public PlayerSpaceship(Coordinate2D initialLocation, ProjectileManager projectileManager, Runnable onDeath, AsteroidsGame asteroidsGame) {
+    public PlayerSpaceship(Coordinate2D initialLocation, ProjectileManager projectileManager, Runnable onDeath, PauseStateProvider pauseStateProvider) {
         super("sprites/ship_idle.png", initialLocation, new Size(96, 64));
         this.projectileManager = projectileManager;
         this.onDeath = onDeath;
-        this.asteroidsGame = asteroidsGame;
+        this.pauseStateProvider = pauseStateProvider;
         
         setAnchorPoint(AnchorPoint.CENTER_CENTER);
         setDirection(currentFacingDirection);
         setRotate(currentFacingDirection - 90);
         
         setState(new InvulnerableState(this));
+    }
+
+    @Override
+    public void setupTimers() {
+        shootTimer = new Timer(GameConstants.SHOOT_INTERVAL_PLAYER) {
+            @Override
+            public void onAnimationUpdate(long timestamp) {
+                if (pauseStateProvider.isPaused()) return;
+                canShoot = true;
+                pause();
+            }
+        };
+        shootTimer.pause();
+        addTimer(shootTimer);
+
+        addTimer(new Timer(GameConstants.INVULNERABILITY_DURATION) {
+            @Override
+            public void onAnimationUpdate(long timestamp) {
+                if (pauseStateProvider.isPaused()) return;
+                if (currentState instanceof InvulnerableState) {
+                    setState(new NormalState(PlayerSpaceship.this));
+                }
+                remove();
+            }
+        });
     }
 
     public void setState(PlayerState state) {
@@ -62,7 +92,7 @@ public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener,
 
     @Override
     public void onPressedKeysChange(Set<KeyCode> pressedKeys) {
-        if (asteroidsGame.isPaused()) {
+        if (pauseStateProvider.isPaused()) {
             isRotatingLeft = false;
             isRotatingRight = false;
             isAccelerating = false;
@@ -85,11 +115,12 @@ public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener,
     }
 
     public void handleShooting() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastShotTime > GameConstants.SHOOT_INTERVAL_PLAYER) {
+        if (canShoot) {
             projectileManager.spawnProjectile(getAnchorLocation(), currentFacingDirection, false);
             SoundManager.play(SoundManager.SoundType.PLAYER_FIRE);
-            lastShotTime = currentTime;
+            canShoot = false;
+            shootTimer.reset();
+            shootTimer.resume();
         }
     }
 
@@ -100,7 +131,7 @@ public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener,
     }
 
     private boolean handlePause() {
-        if (asteroidsGame.isPaused()) {
+        if (pauseStateProvider.isPaused()) {
             if (getSpeed() > 0) {
                 savedSpeed = getSpeed();
                 setSpeed(0);
@@ -144,8 +175,14 @@ public class PlayerSpaceship extends DynamicSpriteEntity implements KeyListener,
 
     @Override
     public void onCollision(List<Collider> collidingObjects) {
-        if (asteroidsGame.isPaused()) return;
+        if (pauseStateProvider.isPaused()) return;
         currentState.onCollision(collidingObjects);
+    }
+
+    @Override
+    public void onHitBy(Collider collider) {
+        if (pauseStateProvider.isPaused()) return;
+        currentState.onHitBy(collider);
     }
 
     public void destroy() {

@@ -6,7 +6,7 @@ import com.github.hanyaeger.api.entities.Collider;
 import com.github.hanyaeger.api.entities.SceneBorderCrossingWatcher;
 import com.github.hanyaeger.api.scenes.SceneBorder;
 import com.github.hanyaeger.api.Size;
-import nl.han.asteroids.AsteroidsGame;
+import nl.han.asteroids.interfaces.PauseStateProvider;
 import nl.han.asteroids.config.GameConstants;
 import nl.han.asteroids.entities.projectiles.Laser;
 import nl.han.asteroids.managers.EnemyManager;
@@ -19,8 +19,8 @@ import java.util.Random;
 public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, Collided, Collider {
     private final int size;
 
-    public Asteroid(Coordinate2D initialLocation, double direction, double speed, int size, EnemyManager enemyManager, AsteroidsGame asteroidsGame) {
-        super(getRandomSprite(size), initialLocation, getActualSize(size), enemyManager, asteroidsGame);
+    public Asteroid(Coordinate2D initialLocation, double direction, double speed, int size, EnemyManager enemyManager, PauseStateProvider pauseStateProvider) {
+        super(getRandomSprite(size), initialLocation, getActualSize(size), enemyManager, pauseStateProvider);
         this.size = size;
         setMotion(speed, direction);
     }
@@ -51,14 +51,19 @@ public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, C
 
     @Override
     public void onCollision(List<Collider> collidingObjects) {
-        if (asteroidsGame.isPaused()) return;
+        if (pauseStateProvider.isPaused()) return;
         for (Collider col : collidingObjects) {
-            if (col instanceof Laser laser && !laser.isEnemyLaser()) {
-                laser.remove();
-                destroy();
-            } else if (col instanceof PlayerSpaceship player) {
-                player.destroy();
+            this.onHitBy(col);
+            if (col instanceof nl.han.asteroids.interfaces.Hittable hittable) {
+                hittable.onHitBy(this);
             }
+        }
+    }
+
+    @Override
+    public void onHitBy(Collider collider) {
+        if (collider instanceof Laser laser && !laser.isEnemyLaser()) {
+            destroy();
         }
     }
 

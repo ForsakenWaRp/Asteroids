@@ -46,7 +46,6 @@ public class AsteroidsButton extends TextEntity implements MouseEnterListener, M
     public void explicitUpdate(long timestamp) {
         if (isSelected) {
             pulseValue += 0.1;
-            // Pulseer de helderheid van de kleur geel in plaats van de schaal
             double brightness = 0.7 + Math.sin(pulseValue) * 0.3;
             setFill(Color.color(1.0, 1.0, 0, brightness));
         }

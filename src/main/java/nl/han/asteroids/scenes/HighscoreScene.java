@@ -71,7 +71,7 @@ public class HighscoreScene extends DynamicScene implements KeyListener {
             PlayerScore s = scores.get(i);
             var scoreText = new TextEntity(
                     new Coordinate2D(GameConstants.WIDTH / 2, yPos),
-                    String.format("%2d.  %-15s  %6d", (i + 1), s.getName(), s.getScore())
+                    String.format("%2d.  %-15s  %6d", (i + 1), s.name(), s.score())
             );
             scoreText.setAnchorPoint(AnchorPoint.TOP_CENTER);
             scoreText.setFill(i == 0 ? Color.GOLD : i == 1 ? Color.SILVER : i == 2 ? Color.BROWN : Color.WHITE);

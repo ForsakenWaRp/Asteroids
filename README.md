@@ -12,9 +12,10 @@ Het project is opgebouwd rondom de **Yaeger Game Engine**, waarbij een strikte s
 
 | Module | Verantwoordelijkheid |
 | :--- | :--- |
-| **`config`** | Beheer van globale constanten en configuratie-instellingen. |
+| **`config`** | Beheer van globale constanten en configuratie-instellingen (`GameConstants`). Alles rondom snelheden, spawn-kansen en scores is hier gecentraliseerd. |
 | **`entities`** | Implementatie van domeinobjecten (speler, vijanden, projectielen). |
-| **`managers`** | Afhandeling van object-levenscycli (spawning, scoring, collision delegatie). |
+| **`factories`** | Bevat de `EnemyFactory` voor het centraal instantiëren van vijanden (Factory Pattern). |
+| **`managers`** | Afhandeling van object-levenscycli (spawning, scoring, collision delegatie). Let op: elke manager heeft één specifieke taak (Single Responsibility Principle). |
 | **`scenes`** | Definitie van de verschillende gamestates (hoofdmenu, gameplay, game-over). |
 | **`ui`** | Visuele representatie van data (score, levens, knoppen). |
 
@@ -23,20 +24,27 @@ Door deze modulaire opbouw is de code **testbaar**, **onderhoudbaar** en **schaa
 
 ---
 
-## 🧬 2. Kernconcepten van OOP
+## 🧬 2. Kernconcepten van OOP & Recente Verbeteringen
 
-### A. Abstractie & Overerving (Inheritance)
-Het project maakt intensief gebruik van abstracte basisklassen zoals `BaseEnemy` en `BasePlayerState`.
-*   **`BaseEnemy`**: Deze klasse centraliseert gedeelde logica zoals het pauzeren van beweging. Specifieke vijanden zoals `Asteroid` en `Ufo` erven hiervan over en hoeven alleen hun unieke gedrag te implementeren in de `updateEnemy()` methode.
-*   **`abstract`**: Dit keyword dwingt af dat de basisklasse niet direct geïnstantieerd kan worden, wat de architecturale integriteit waarborgt.
+Naast de basisconcepten zijn er recent een aantal geavanceerde OOP-patronen en best practices doorgevoerd om de codebase te professionaliseren:
 
-### B. Polymorfisme & Interfaces
-Interfaces zoals `PlayerState` en `EntityAdder` worden gebruikt om gedrag te definiëren los van de concrete implementatie.
-*   **Interface als Contract**: De `GameScene` implementeert `EntityAdder`. Hierdoor kunnen managers entiteiten toevoegen aan de scène zonder dat ze hoeven te weten *hoe* de scène dit technisch afhandelt.
-*   **Dynamic Dispatch**: Java bepaalt tijdens runtime welke methode wordt aangeroepen (bijvoorbeeld in het State Pattern), wat zorgt voor grote flexibiliteit.
+### A. Abstractie, Overerving & Interfaces
+Het project maakt intensief gebruik van abstracte basisklassen en interfaces.
+*   **`BaseEnemy`**: Centraliseert gedeelde logica (zoals pauzeren). `Asteroid` en `Ufo` erven hiervan.
+*   **`PauseStateProvider` (Law of Demeter & Dependency Injection)**: In plaats van de hele `AsteroidsGame` instantie door te geven aan entiteiten om de pauze-status te controleren, is er een specifieke interface gemaakt. Entiteiten weten nu alleen dát er gepauzeerd kan worden, maar niet hoe de rest van de game werkt (losse koppeling).
+*   **`Hittable` Interface (Tell, Don't Ask principe)**: Het collision-systeem maakt geen gebruik meer van zware `instanceof` checks waarbij entiteiten andermans data aanpassen. Als objecten botsen roepen ze nu op elkaar de `onHitBy()` methode aan. Het object zélf bepaalt dan wat er gebeurt (bijvoorbeeld levens verliezen of ontploffen).
 
-### C. Encapsulatie
-Alle kritieke variabelen (zoals `score`, `lives` en `speed`) zijn `private` of `protected`. Toegang tot deze data verloopt via gecontroleerde methoden. Dit voorkomt ongewenste zijeffecten (side-effects) vanuit andere delen van de applicatie.
+### B. Design Patterns
+*   **State Pattern**: Bestuurt het ruimteschip (`NormalState` vs `InvulnerableState`). Nieuwe statussen kunnen makkelijk worden toegevoegd.
+*   **Factory Pattern (`EnemyFactory`)**: De logica voor het bepalen wélke vijand er spawnt en wáár, is uit de `EnemyManager` gehaald. De manager vraagt nu aan de fabriek om een vijand te bouwen, wat de code veel schoner en makkelijker uitbreidbaar maakt.
+
+### C. Moderne Java Features & Data Management
+*   **Java 21 Records**: De `PlayerScore` klasse is omgezet naar een `record`, wat resulteert in één regel code in plaats van een grote klasse vol getters en setters.
+*   **Java Preferences API**: Highscores worden niet meer weggeschreven als losse `highscores.json` of `.txt` bestanden in de projectmap. De `ScoreManager` maakt nu gebruik van de native `Preferences` API om deze onzichtbaar en veilig in het OS op te slaan.
+
+### D. Single Responsibility & Yaeger Timers
+*   **ScoreManager vs EnemyManager**: De score- en combo-logica is uit de `EnemyManager` gehaald en in een eigen `GameScoreManager` geplaatst. 
+*   **Yaeger `TimerContainer`**: Hardcoded `System.currentTimeMillis()` berekeningen voor cooldowns (zoals schieten) zijn vervangen door native Yaeger `Timer` objecten via de `TimerContainer` interface. Dit sluit beter aan op de gameloop en pauzeert automatisch mee met het spel.
 
 ---
 

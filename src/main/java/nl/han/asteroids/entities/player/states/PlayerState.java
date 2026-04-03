@@ -9,5 +9,6 @@ public interface PlayerState {
     void handleInput(Set<KeyCode> pressedKeys);
     void update(long timestamp);
     void onCollision(List<Collider> collidingObjects);
+    void onHitBy(Collider collider);
     void enter();
 }
