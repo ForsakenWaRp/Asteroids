@@ -49,7 +49,35 @@ De besturing van de speler wordt afgehandeld door het **State Pattern**. De `Pla
 
 ---
 
-## 📐 4. Fysica en Bewegingslogica
+## 🎨 4. Media Assets & Resource Management
+
+### A. Sprites en Visuele Assets
+De visuele elementen van het spel worden ingeladen via de `DynamicSpriteEntity` klasse van de Yaeger engine.
+*   **Implementatie**: In klassen zoals `PlayerSpaceship` en `Asteroid` wordt het pad naar de sprite (bijv. `"sprites/ship_idle.png"`) direct aan de constructor meegegeven. Yaeger handelt de caching en rendering van deze afbeeldingen intern af.
+*   **Herkomst**: De gebruikte sprites zijn verzameld via publieke bronnen op internet (Google) en zijn vrij beschikbaar voor educatief en niet-commercieel gebruik.
+
+### B. Audiobeheer via de `SoundManager`
+Het geluid in de game wordt gecentraliseerd beheerd door de `SoundManager` klasse. Dit is een statische utility-klasse die gebruikmaakt van de `SoundClip` API van Yaeger.
+*   **Enum-gestuurd**: De `SoundType` enum definieert de beschikbare geluidseffecten (zoals `PLAYER_FIRE` en `ASTEROID_EXPLOSION`) inclusief hun bestandspaden.
+*   **Lifecycle**: Geluiden zoals het thema in het hoofdmenu en de UFO-motor worden gepauzeerd of gestopt op basis van de gamestate, wat essentieel is voor een goede gebruikerservaring.
+
+---
+
+## ⚙️ 5. Yaeger Game Engine Integratie
+
+Dit project leunt zwaar op de Yaeger Engine, een JavaFX-gebaseerd framework ontworpen voor het versnellen van game-ontwikkeling. De volgende kernobjecten worden intensief gebruikt:
+
+| Yaeger Object | Toepassing in dit Project |
+| :--- | :--- |
+| **`YaegerGame`** | De centrale controller (`AsteroidsGame`) die de scènes beheert en de engine initialiseert. |
+| **`DynamicScene`** | Gebruikt voor `GameScene`; maakt real-time updates en dynamische interactie mogelijk. |
+| **`DynamicSpriteEntity`** | De basis voor alle bewegende objecten. Het biedt ingebouwde methoden voor snelheid, richting en rotatie. |
+| **`EntitySpawner`** | Gebruikt in `EnemyManager` om op gezette tijden nieuwe objecten in de wereld te introduceren zonder de hoofd-gameloop te belasten. |
+| **`Collider` / `Collided`** | Interfaces die zorgen voor de automatische detectie van botsingen tussen verschillende entiteiten. |
+
+---
+
+## 📐 6. Fysica en Bewegingslogica
 
 De beweging in Asteroids is gebaseerd op een vereenvoudigd vector-model:
 
