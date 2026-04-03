@@ -81,8 +81,10 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
 
     private void setupBackgroundStars() {
         var random = new Random();
-        for (int i = 0; i < 150; i++) {
-            addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT)));
+        for (int layer = 1; layer <= 3; layer++) {
+            for (int i = 0; i < 50; i++) {
+                addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT), layer));
+            }
         }
     }
 

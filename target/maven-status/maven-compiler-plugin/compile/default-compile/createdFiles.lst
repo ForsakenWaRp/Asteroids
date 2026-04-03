@@ -1,0 +1,10 @@
+nl\han\asteroids\entities\enemy\BaseEnemy.class
+nl\han\asteroids\managers\EnemyManager.class
+nl\han\asteroids\entities\player\states\PlayerState.class
+nl\han\asteroids\managers\ProjectileManager.class
+nl\han\asteroids\models\PlayerScore.class
+nl\han\asteroids\interfaces\EntityAdder.class
+nl\han\asteroids\entities\enemy\Asteroid.class
+nl\han\asteroids\AsteroidsGame.class
+nl\han\asteroids\entities\enemy\Ufo.class
+nl\han\asteroids\managers\ParticleManager.class

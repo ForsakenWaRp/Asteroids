@@ -38,13 +38,7 @@ public class AsteroidsButton extends TextEntity implements MouseEnterListener, M
 
     public void setSelected(boolean selected) {
         this.isSelected = selected;
-        if (!selected) {
-            setFill(Color.WHITE);
-            setScaleX(1.0);
-            setScaleY(1.0);
-        } else {
-            setFill(Color.YELLOW);
-        }
+        setFill(selected ? Color.YELLOW : Color.WHITE);
         setText(originalText);
     }
 
@@ -52,9 +46,9 @@ public class AsteroidsButton extends TextEntity implements MouseEnterListener, M
     public void explicitUpdate(long timestamp) {
         if (isSelected) {
             pulseValue += 0.1;
-            double scale = 1.0 + Math.sin(pulseValue) * 0.05;
-            setScaleX(scale);
-            setScaleY(scale);
+            // Pulseer de helderheid van de kleur geel in plaats van de schaal
+            double brightness = 0.7 + Math.sin(pulseValue) * 0.3;
+            setFill(Color.color(1.0, 1.0, 0, brightness));
         }
     }
 
