@@ -30,6 +30,7 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
     private final ProjectileManager projectileManager;
     private final ParticleManager particleManager;
     private EnemyManager enemyManager;
+    private GameScoreManager gameScoreManager;
     private ScoreText scoreText;
     private HealthDisplay healthDisplay;
     private int lives = GameConstants.INITIAL_LIVES;
@@ -54,11 +55,13 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
 
     @Override
     public void setupEntitySpawners() {
-        enemyManager = new EnemyManager(asteroidsGame, () -> {
+        gameScoreManager = new GameScoreManager(() -> {
             if (scoreText != null) {
-                scoreText.setScore(enemyManager.getScore(), enemyManager.getMultiplier());
+                scoreText.setScore(gameScoreManager.getScore(), gameScoreManager.getMultiplier());
             }
-        }, projectileManager, particleManager);
+        });
+        
+        enemyManager = new EnemyManager(asteroidsGame, gameScoreManager, projectileManager, particleManager);
         addEntitySpawner(enemyManager);
     }
 
@@ -81,8 +84,10 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
 
     private void setupBackgroundStars() {
         var random = new Random();
-        for (int i = 0; i < 150; i++) {
-            addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT)));
+        for (int layer = 1; layer <= 3; layer++) {
+            for (int i = 0; i < GameConstants.BACKGROUND_STARS_PER_LAYER; i++) {
+                addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT), layer));
+            }
         }
     }
 
@@ -109,7 +114,7 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
             spawnPlayer();
         } else {
             Platform.runLater(() -> {
-                asteroidsGame.setLastScore(enemyManager.getScore());
+                asteroidsGame.setLastScore(gameScoreManager.getScore());
                 asteroidsGame.setActiveScene(GameConstants.SCENE_GAME_OVER);
             });
         }

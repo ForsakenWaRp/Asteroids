@@ -1,5 +1,7 @@
 package nl.han.asteroids.entities.enemy;
 
+import com.github.hanyaeger.api.Timer;
+import com.github.hanyaeger.api.TimerContainer;
 import com.github.hanyaeger.api.AnchorPoint;
 import com.github.hanyaeger.api.Coordinate2D;
 import com.github.hanyaeger.api.Size;
@@ -7,7 +9,7 @@ import com.github.hanyaeger.api.entities.Collided;
 import com.github.hanyaeger.api.entities.Collider;
 import com.github.hanyaeger.api.entities.SceneBorderCrossingWatcher;
 import com.github.hanyaeger.api.scenes.SceneBorder;
-import nl.han.asteroids.AsteroidsGame;
+import nl.han.asteroids.interfaces.PauseStateProvider;
 import nl.han.asteroids.config.GameConstants;
 import nl.han.asteroids.managers.EnemyManager;
 import nl.han.asteroids.managers.ProjectileManager;
@@ -24,21 +26,34 @@ import java.util.Random;
  * OOP Principes:
  * - Overerving: Breidt BaseEnemy uit.
  */
-public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collided, Collider {
+public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collided, Collider, TimerContainer {
 
     private final ProjectileManager projectileManager;
-    private long lastShotTime = 0;
     private static final long SHOT_INTERVAL = GameConstants.SHOOT_INTERVAL_UFO;
     private final Random random = new Random();
     private boolean soundPaused = false;
 
-    public Ufo(Coordinate2D initialLocation, ProjectileManager projectileManager, EnemyManager enemyManager, AsteroidsGame asteroidsGame) {
-        super("sprites/ufo.png", initialLocation, new Size(96, 80), enemyManager, asteroidsGame);
+    public Ufo(Coordinate2D initialLocation, ProjectileManager projectileManager, EnemyManager enemyManager, PauseStateProvider pauseStateProvider) {
+        super("sprites/ufo.png", initialLocation, new Size(96, 80), enemyManager, pauseStateProvider);
         this.projectileManager = projectileManager;
         
         setAnchorPoint(AnchorPoint.CENTER_CENTER);
-        setMotion(4.0, 90);
+        setMotion(GameConstants.UFO_SPEED, 90);
         SoundManager.play(SoundManager.SoundType.UFO_ENGINE);
+    }
+
+    @Override
+    public void setupTimers() {
+        addTimer(new Timer(SHOT_INTERVAL) {
+            @Override
+            public void onAnimationUpdate(long timestamp) {
+                if (pauseStateProvider.isPaused()) return;
+                
+                double direction = random.nextDouble() * 360;
+                projectileManager.spawnProjectile(getAnchorLocation(), direction, true);
+                SoundManager.play(SoundManager.SoundType.UFO_FIRE);
+            }
+        });
     }
 
     @Override
@@ -47,21 +62,13 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
             SoundManager.play(SoundManager.SoundType.UFO_ENGINE);
             soundPaused = false;
         }
-
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastShotTime > SHOT_INTERVAL) {
-            double direction = random.nextDouble() * 360;
-            projectileManager.spawnProjectile(getAnchorLocation(), direction, true);
-            SoundManager.play(SoundManager.SoundType.UFO_FIRE);
-            lastShotTime = currentTime;
-        }
     }
 
     @Override
     public void explicitUpdate(long timestamp) {
         super.explicitUpdate(timestamp);
         
-        if (asteroidsGame.isPaused() && !soundPaused) {
+        if (pauseStateProvider.isPaused() && !soundPaused) {
             SoundManager.stop(SoundManager.SoundType.UFO_ENGINE);
             soundPaused = true;
         }
@@ -77,18 +84,26 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
 
     @Override
     public void onCollision(List<Collider> collidingObjects) {
-        if (asteroidsGame.isPaused()) return;
+        if (pauseStateProvider.isPaused()) return;
 
         for (Collider collidingObject : collidingObjects) {
-            if (collidingObject instanceof Laser laser && !laser.isEnemyLaser()) {
-                laser.remove();
-                SoundManager.stop(SoundManager.SoundType.UFO_ENGINE);
-                enemyManager.onUfoDestroyed(this);
-                remove();
-            } else if (collidingObject instanceof PlayerSpaceship player) {
-                SoundManager.stop(SoundManager.SoundType.UFO_ENGINE);
-                player.destroy();
+            this.onHitBy(collidingObject);
+            if (collidingObject instanceof nl.han.asteroids.interfaces.Hittable hittable) {
+                hittable.onHitBy(this);
             }
         }
+    }
+
+    @Override
+    public void onHitBy(Collider collider) {
+        if (collider instanceof Laser laser && !laser.isEnemyLaser()) {
+            destroy();
+        }
+    }
+
+    public void destroy() {
+        SoundManager.stop(SoundManager.SoundType.UFO_ENGINE);
+        enemyManager.onUfoDestroyed(this);
+        remove();
     }
 }

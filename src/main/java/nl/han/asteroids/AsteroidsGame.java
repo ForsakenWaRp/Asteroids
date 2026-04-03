@@ -3,9 +3,10 @@ package nl.han.asteroids;
 import com.github.hanyaeger.api.Size;
 import com.github.hanyaeger.api.YaegerGame;
 import nl.han.asteroids.config.GameConstants;
+import nl.han.asteroids.interfaces.PauseStateProvider;
 import nl.han.asteroids.scenes.*;
 
-public class AsteroidsGame extends YaegerGame {
+public class AsteroidsGame extends YaegerGame implements PauseStateProvider {
 
     private int lastScore = 0;
     private boolean isPaused = false;

@@ -8,11 +8,15 @@ import com.github.hanyaeger.api.Size;
 import com.github.hanyaeger.api.AnchorPoint;
 import com.github.hanyaeger.api.entities.impl.DynamicSpriteEntity;
 import nl.han.asteroids.config.GameConstants;
+import nl.han.asteroids.entities.enemy.BaseEnemy;
+import nl.han.asteroids.entities.player.PlayerSpaceship;
+import nl.han.asteroids.interfaces.Hittable;
+import java.util.List;
 
 /**
  * Representeert een laserstraal afgevuurd door de speler of een UFO.
  */
-public class Laser extends DynamicSpriteEntity implements SceneBorderCrossingWatcher, Collider {
+public class Laser extends DynamicSpriteEntity implements SceneBorderCrossingWatcher, Collider, Hittable {
 
     private final boolean isEnemyLaser;
 
@@ -21,7 +25,16 @@ public class Laser extends DynamicSpriteEntity implements SceneBorderCrossingWat
         this.isEnemyLaser = isEnemyLaser;
         
         setAnchorPoint(AnchorPoint.CENTER_CENTER);
-        setMotion(8.0, direction);
+        setMotion(GameConstants.LASER_SPEED, direction);
+    }
+
+    @Override
+    public void onHitBy(Collider collider) {
+        if (collider instanceof BaseEnemy && !isEnemyLaser) {
+            remove();
+        } else if (collider instanceof PlayerSpaceship && isEnemyLaser) {
+            remove();
+        }
     }
 
     @Override

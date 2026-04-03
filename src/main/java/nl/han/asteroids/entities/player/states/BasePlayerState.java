@@ -37,5 +37,8 @@ public abstract class BasePlayerState implements PlayerState {
     public abstract void onCollision(List<Collider> collidingObjects);
 
     @Override
+    public abstract void onHitBy(Collider collider);
+
+    @Override
     public void enter() {}
 }
