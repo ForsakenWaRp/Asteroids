@@ -15,17 +15,19 @@ import java.util.Random;
  */
 public class Star extends DynamicCircleEntity implements SceneBorderCrossingWatcher {
 
-    public Star(Coordinate2D initialLocation) {
+    public Star(Coordinate2D initialLocation, int layer) {
         super(initialLocation);
         
         var random = new Random();
-        double size = 0.5 + random.nextDouble() * 1.5;
+        double size = (0.5 + random.nextDouble() * 1.5) * (layer == 1 ? 0.5 : layer == 2 ? 1.0 : 1.5);
         setRadius(size);
         
-        double opacity = 0.3 + random.nextDouble() * 0.7;
+        double opacity = (0.3 + random.nextDouble() * 0.7) * (layer == 1 ? 0.4 : layer == 2 ? 0.7 : 1.0);
         setFill(Color.color(1, 1, 1, opacity));
         
-        setMotion(0.1 + random.nextDouble() * 0.4, 180 + random.nextDouble() * 20);
+        // Snelheid hangt af van de laag (parallax)
+        double speed = (0.05 + random.nextDouble() * 0.15) * (layer == 1 ? 0.5 : layer == 2 ? 1.0 : 2.0);
+        setMotion(speed, 180 + (random.nextDouble() * 20 - 10));
     }
 
     @Override

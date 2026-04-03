@@ -15,8 +15,8 @@ public class GameConstants {
     public static final int INITIAL_LIVES = 3;
     public static final long SHOOT_INTERVAL_PLAYER = 250;
     public static final long SHOOT_INTERVAL_UFO = 2000;
-    public static final long INVULNERABILITY_DURATION = 1500;
     
+    public static final long INVULNERABILITY_DURATION = 1500;
     public static final double PLAYER_ROTATION_SPEED = 4.5;
     public static final double PLAYER_ACCELERATION = 0.15;
     public static final double PLAYER_MAX_SPEED = 7.0;

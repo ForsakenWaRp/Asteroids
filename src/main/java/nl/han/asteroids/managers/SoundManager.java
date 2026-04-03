@@ -24,8 +24,6 @@ public class SoundManager {
     static {
         for (SoundType type : SoundType.values()) {
             var clip = new SoundClip(type.getPath());
-            if (type == SoundType.MENU_THEME || type == SoundType.UFO_ENGINE) {
-            }
             sounds.put(type, clip);
         }
     }

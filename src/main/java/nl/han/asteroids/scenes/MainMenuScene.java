@@ -25,6 +25,8 @@ import java.util.Set;
 /**
  * Wat de Class doet: Het eerste scherm van de game met toetsenbordbediening en audio-schakelaar.
  */
+import nl.han.asteroids.entities.ui.BackgroundAsteroid;
+
 public class MainMenuScene extends DynamicScene implements KeyListener {
 
     private final AsteroidsGame asteroidsGame;
@@ -49,14 +51,17 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
         menuButtons.clear();
         previouslyPressedKeys.clear();
         setupBackgroundStars();
+        setupBackgroundAsteroids();
 
         var titleText = new TextEntity(
                 new Coordinate2D(GameConstants.WIDTH / 2, GameConstants.HEIGHT / 3 - 50),
                 "ASTEROIDS"
         );
         titleText.setAnchorPoint(AnchorPoint.CENTER_CENTER);
-        titleText.setFill(Color.WHITE);
-        titleText.setFont(Font.font("Roboto", FontWeight.BOLD, 100));
+        titleText.setFill(Color.YELLOW);
+        titleText.setStrokeColor(Color.WHITE);
+        titleText.setStrokeWidth(2.0);
+        titleText.setFont(Font.font("Roboto", FontWeight.BOLD, 120));
         addEntity(titleText);
 
         var playButton = new AsteroidsButton(
@@ -82,7 +87,6 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
                 new Coordinate2D(GameConstants.WIDTH / 2, GameConstants.HEIGHT / 2 + 120),
                 "Highscores",
                 () -> {
-                    SoundManager.stop(SoundManager.SoundType.MENU_THEME);
                     Platform.runLater(() -> asteroidsGame.setActiveScene(GameConstants.SCENE_HIGHSCORES));
                 }
         );
@@ -108,6 +112,13 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
         addEntity(signatureText);
 
         updateSelection();
+    }
+
+    private void setupBackgroundAsteroids() {
+        var random = new Random();
+        for (int i = 0; i < 5; i++) {
+            addEntity(new BackgroundAsteroid(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT)));
+        }
     }
 
     private String getAudioText() {
@@ -147,7 +158,6 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
             }
         } 
         
-        // Ook links/rechts ondersteunen voor de audio toggle
         if (menuButtons.get(selectedIndex) == audioButton) {
             if ((pressedKeys.contains(KeyCode.LEFT) && !previouslyPressedKeys.contains(KeyCode.LEFT)) ||
                 (pressedKeys.contains(KeyCode.RIGHT) && !previouslyPressedKeys.contains(KeyCode.RIGHT))) {
@@ -160,8 +170,10 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
 
     private void setupBackgroundStars() {
         var random = new Random();
-        for (int i = 0; i < 100; i++) {
-            addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT)));
+        for (int layer = 1; layer <= 3; layer++) {
+            for (int i = 0; i < 40; i++) {
+                addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT), layer));
+            }
         }
     }
 }

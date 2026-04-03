@@ -23,7 +23,15 @@ import java.util.Set;
 /**
  * Toont de top highscores met toetsenbordondersteuning.
  */
-public class HighscoreScene extends StaticScene implements KeyListener {
+import com.github.hanyaeger.api.scenes.DynamicScene;
+import nl.han.asteroids.entities.ui.BackgroundAsteroid;
+import nl.han.asteroids.entities.ui.Star;
+import java.util.Random;
+
+/**
+ * Toont de top highscores met toetsenbordondersteuning en visuele flair.
+ */
+public class HighscoreScene extends DynamicScene implements KeyListener {
 
     private final AsteroidsGame asteroidsGame;
     private AsteroidsButton backButton;
@@ -41,31 +49,35 @@ public class HighscoreScene extends StaticScene implements KeyListener {
     @Override
     public void setupEntities() {
         previouslyPressedKeys.clear();
+        setupBackgroundStars();
+        setupBackgroundAsteroids();
 
         var titleText = new TextEntity(
                 new Coordinate2D(GameConstants.WIDTH / 2, 50),
-                "Highscores"
+                "HIGHSCORES"
         );
         titleText.setAnchorPoint(AnchorPoint.TOP_CENTER);
         titleText.setFill(Color.YELLOW);
-        titleText.setFont(Font.font("Roboto", FontWeight.BOLD, 40));
+        titleText.setStrokeColor(Color.WHITE);
+        titleText.setStrokeWidth(1.0);
+        titleText.setFont(Font.font("Roboto", FontWeight.BOLD, 60));
         addEntity(titleText);
 
         List<PlayerScore> scores = ScoreManager.loadScores();
-        int yPos = 120;
+        int yPos = 150;
         int limit = Math.min(scores.size(), 10);
         
         for (int i = 0; i < limit; i++) {
             PlayerScore s = scores.get(i);
             var scoreText = new TextEntity(
                     new Coordinate2D(GameConstants.WIDTH / 2, yPos),
-                    (i + 1) + ". " + s.getName() + " - " + s.getScore()
+                    String.format("%2d.  %-15s  %6d", (i + 1), s.getName(), s.getScore())
             );
             scoreText.setAnchorPoint(AnchorPoint.TOP_CENTER);
-            scoreText.setFill(Color.WHITE);
-            scoreText.setFont(Font.font("Roboto", FontWeight.NORMAL, 20));
+            scoreText.setFill(i == 0 ? Color.GOLD : i == 1 ? Color.SILVER : i == 2 ? Color.BROWN : Color.WHITE);
+            scoreText.setFont(Font.font("Monospaced", FontWeight.BOLD, 24));
             addEntity(scoreText);
-            yPos += 40;
+            yPos += 45;
         }
 
         backButton = new AsteroidsButton(
@@ -74,7 +86,23 @@ public class HighscoreScene extends StaticScene implements KeyListener {
                 () -> Platform.runLater(() -> asteroidsGame.setActiveScene(GameConstants.SCENE_MAIN_MENU))
         );
         addEntity(backButton);
-        backButton.setSelected(true); // Altijd geselecteerd aangezien het de enige knop is
+        backButton.setSelected(true);
+    }
+
+    private void setupBackgroundStars() {
+        var random = new Random();
+        for (int layer = 1; layer <= 3; layer++) {
+            for (int i = 0; i < 30; i++) {
+                addEntity(new Star(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT), layer));
+            }
+        }
+    }
+
+    private void setupBackgroundAsteroids() {
+        var random = new Random();
+        for (int i = 0; i < 3; i++) {
+            addEntity(new BackgroundAsteroid(new Coordinate2D(random.nextDouble() * GameConstants.WIDTH, random.nextDouble() * GameConstants.HEIGHT)));
+        }
     }
 
     @Override

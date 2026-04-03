@@ -12,11 +12,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-public class AsteroidsButton extends TextEntity implements MouseEnterListener, MouseExitListener, MouseButtonPressedListener {
+import com.github.hanyaeger.api.UpdateExposer;
+
+public class AsteroidsButton extends TextEntity implements MouseEnterListener, MouseExitListener, MouseButtonPressedListener, UpdateExposer {
 
     private final Runnable onClick;
     private String originalText;
     private boolean isSelected = false;
+    private double pulseValue = 0;
 
     public AsteroidsButton(Coordinate2D initialLocation, String text, Runnable onClick) {
         super(initialLocation, text);
@@ -35,8 +38,24 @@ public class AsteroidsButton extends TextEntity implements MouseEnterListener, M
 
     public void setSelected(boolean selected) {
         this.isSelected = selected;
-        setFill(selected ? Color.YELLOW : Color.WHITE);
+        if (!selected) {
+            setFill(Color.WHITE);
+            setScaleX(1.0);
+            setScaleY(1.0);
+        } else {
+            setFill(Color.YELLOW);
+        }
         setText(originalText);
+    }
+
+    @Override
+    public void explicitUpdate(long timestamp) {
+        if (isSelected) {
+            pulseValue += 0.1;
+            double scale = 1.0 + Math.sin(pulseValue) * 0.05;
+            setScaleX(scale);
+            setScaleY(scale);
+        }
     }
 
     @Override
