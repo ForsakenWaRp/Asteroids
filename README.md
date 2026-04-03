@@ -1,3 +1,5 @@
+# Hey Nani hierbij wat documentatie en uitleg voor je! Als je verdere info nodig heb weet je me te vinden.
+
 # 🌌 Asteroids: Architectuur & Implementatie
 
 Welkom bij de technische documentatie van het Asteroids-project. Dit document is bedoeld voor ontwikkelaars die een dieper inzicht willen krijgen in de software-architectuur, de toegepaste Object-Oriented Programming (OOP) principes en de uitbreidingsmogelijkheden van dit systeem.
