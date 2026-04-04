@@ -11,14 +11,35 @@ import nl.han.asteroids.config.GameConstants;
 import nl.han.asteroids.entities.projectiles.Laser;
 import nl.han.asteroids.managers.EnemyManager;
 import nl.han.asteroids.managers.SoundManager;
-import nl.han.asteroids.entities.player.PlayerSpaceship;
 
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Hey Nani! Deze klasse representeert een asteroïde in het spel.
+ * 
+ * OOP Principes:
+ * - Overerving (Inheritance): Deze klasse extends BaseEnemy.
+ * - Interfaces: Deze klasse implementeert Collided en Collider voor botsingen, en SceneBorderCrossingWatcher om schermranden te detecteren.
+ * 
+ * Han Yaeger Engine:
+ * - DynamicSpriteEntity (via BaseEnemy): Zorgt ervoor dat dit een bewegend plaatje is.
+ * - SceneBorderCrossingWatcher: Laat weten wanneer we de rand van het scherm bereiken.
+ * - Collided / Collider: Han Yaeger's manier om botsingen af te handelen.
+ * Documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
+ */
 public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, Collided, Collider {
     private final int size;
 
+    /**
+     * De constructor maakt de asteroïde aan en geeft hem een richting en snelheid.
+     * @param initialLocation Startpositie (x, y)
+     * @param direction De hoek/richting waarin de asteroïde vliegt
+     * @param speed De snelheid
+     * @param size De grootte (3 is groot, 2 is middel, 1 is klein)
+     * @param enemyManager Beheert alle vijanden
+     * @param pauseStateProvider Vertelt of het spel gepauzeerd is
+     */
     public Asteroid(Coordinate2D initialLocation, double direction, double speed, int size, EnemyManager enemyManager, PauseStateProvider pauseStateProvider) {
         super(getRandomSprite(size), initialLocation, getActualSize(size), enemyManager, pauseStateProvider);
         this.size = size;
@@ -35,9 +56,18 @@ public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, C
         return (size == 3) ? new Size(160, 160) : (size == 2) ? new Size(96, 96) : new Size(64, 64);
     }
 
+    /**
+     * @Override betekent dat we een methode uit de BaseEnemy klasse overschrijven.
+     * Voor de asteroïde hoeven we hier niets speciaals te updaten.
+     */
     @Override
     protected void updateEnemy(long timestamp) {}
 
+    /**
+     * @Override van SceneBorderCrossingWatcher.
+     * Zorgt voor het 'screen wrap' effect (als je links het scherm uitgaat, kom je rechts terug).
+     * @param border De rand van het scherm die we kruisen.
+     */
     @Override
     public void notifyBoundaryCrossing(SceneBorder border) {
         double x = getAnchorLocation().getX();
@@ -49,6 +79,11 @@ public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, C
         setAnchorLocation(new Coordinate2D(x, y));
     }
 
+    /**
+     * @Override van Collided.
+     * Wordt door Han Yaeger aangeroepen als we met andere objecten (Colliders) botsen.
+     * @param collidingObjects De lijst van objecten die we raken.
+     */
     @Override
     public void onCollision(List<Collider> collidingObjects) {
         if (pauseStateProvider.isPaused()) return;
@@ -60,6 +95,11 @@ public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, C
         }
     }
 
+    /**
+     * @Override van een custom interface of BaseEnemy (indien van toepassing).
+     * Hier passen we 'Tell Don't Ask' toe: we vernietigen onszelf als we door een speler-laser geraakt worden.
+     * @param collider Het object dat ons raakt.
+     */
     @Override
     public void onHitBy(Collider collider) {
         if (collider instanceof Laser laser && !laser.isEnemyLaser()) {
@@ -77,5 +117,9 @@ public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, C
         }
     }
 
+    /**
+     * Geeft de grootte van de asteroïde terug.
+     * @return de grootte.
+     */
     public int getSize() { return size; }
 }

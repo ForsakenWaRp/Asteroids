@@ -24,6 +24,15 @@ import nl.han.asteroids.interfaces.EntityAdder;
 
 import java.util.*;
 
+/**
+ * Hoi Nani! Dit is de GameScene. Hier gebeurt de echte actie van het spel!
+ * Deze klasse erft (extends) van DynamicScene, wat betekent dat deze scene zichzelf steeds updatet (game loop).
+ * Perfect voor bewegende dingen, net zoals de auto's in jouw Frogger game!
+ * Het implementeert meerdere interfaces zoals EntitySpawnerContainer (om vijanden te spawnen) en KeyListener (voor besturing).
+ * Encapsulatie wordt gebruikt door interne managers en variabelen private te houden.
+ * 
+ * Han Yaeger documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
+ */
 public class GameScene extends DynamicScene implements EntitySpawnerContainer, KeyListener, EntityAdder {
 
     private final AsteroidsGame asteroidsGame;
@@ -41,6 +50,10 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
     private Set<KeyCode> previouslyPressedKeys = new HashSet<>();
     private AsteroidsButton audioButton;
 
+    /**
+     * De constructor waar we onze managers klaarzetten.
+     * @param asteroidsGame De hoofdgame referentie.
+     */
     public GameScene(AsteroidsGame asteroidsGame) {
         this.asteroidsGame = asteroidsGame;
         // ProjectileManager en ParticleManager gebruiken nu de EntityAdder interface
@@ -48,11 +61,18 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
         this.particleManager = new ParticleManager(this);
     }
 
+    /**
+     * @Override: Hier stellen we de scene in, zoals de achtergrondkleur.
+     */
     @Override
     public void setupScene() {
         setBackgroundColor(GameConstants.BACKGROUND_COLOR);
     }
 
+    /**
+     * @Override: Deze methode is van EntitySpawnerContainer.
+     * Hier voegen we Spawners toe, die automatisch en op vaste tijden nieuwe Entities (zoals vijanden) in de wereld zetten.
+     */
     @Override
     public void setupEntitySpawners() {
         gameScoreManager = new GameScoreManager(() -> {
@@ -65,6 +85,9 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
         addEntitySpawner(enemyManager);
     }
 
+    /**
+     * @Override: Hier voegen we alle begin-Entities toe aan onze Scene, zoals de speler, score tekst en levens.
+     */
     @Override
     public void setupEntities() {
         asteroidsGame.setPaused(false);
@@ -101,6 +124,9 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
         addEntity(player);
     }
 
+    /**
+     * @Override: Wordt aangeroepen als een andere klasse vraagt om een Entity toe te voegen (via EntityAdder).
+     */
     @Override
     public void addNewEntity(YaegerEntity entity) {
         addEntity(entity);
@@ -120,6 +146,10 @@ public class GameScene extends DynamicScene implements EntitySpawnerContainer, K
         }
     }
 
+    /**
+     * @Override: KeyListener methode. Bepaalt wat er gebeurt als je op knoppen drukt (zoals pauzeren met ESCAPE).
+     * @param pressedKeys De ingedrukte toetsen.
+     */
     @Override
     public void onPressedKeysChange(Set<KeyCode> pressedKeys) {
         if (pressedKeys.contains(KeyCode.ESCAPE) && !previouslyPressedKeys.contains(KeyCode.ESCAPE)) {

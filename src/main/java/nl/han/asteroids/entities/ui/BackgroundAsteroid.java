@@ -10,11 +10,24 @@ import nl.han.asteroids.config.GameConstants;
 import java.util.Random;
 
 /**
- * Een asteroïde puur voor visuele flair in het menu.
- * Heeft geen collision en beweegt langzaam op de achtergrond.
+ * Hey Nani! Dit is een asteroïde puur voor visuele flair in het menu.
+ * Heeft GEEN collision en is alleen maar decoratie.
+ * 
+ * OOP Principes:
+ * - Overerving: Breidt DynamicSpriteEntity uit voor weergave en beweging.
+ * - Interfaces: Implementeert SceneBorderCrossingWatcher voor screen-wrapping.
+ * 
+ * Han Yaeger Engine:
+ * - DynamicSpriteEntity: Zorgt dat het een bewegende afbeelding is.
+ * - SceneBorderCrossingWatcher: Zorgt dat asteroïden terugkomen in het scherm als ze eruit vliegen.
+ * Documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
  */
 public class BackgroundAsteroid extends DynamicSpriteEntity implements SceneBorderCrossingWatcher {
 
+    /**
+     * Constructor maakt de achtergrond-asteroïde aan op een willekeurige locatie en geeft hem een trage snelheid.
+     * @param initialLocation Startpositie (x, y).
+     */
     public BackgroundAsteroid(Coordinate2D initialLocation) {
         super(getRandomSprite(), initialLocation, getActualSize());
         
@@ -33,6 +46,11 @@ public class BackgroundAsteroid extends DynamicSpriteEntity implements SceneBord
         return new Size(160, 160);
     }
 
+    /**
+     * @Override van SceneBorderCrossingWatcher.
+     * Als deze achtergrond asteroïde het scherm uitgaat, komt hij aan de overkant weer terug.
+     * @param border De rand van de scene.
+     */
     @Override
     public void notifyBoundaryCrossing(SceneBorder border) {
         double x = getAnchorLocation().getX();

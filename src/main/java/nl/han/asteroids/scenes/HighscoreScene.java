@@ -20,16 +20,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Toont de top highscores met toetsenbordondersteuning.
- */
 import com.github.hanyaeger.api.scenes.DynamicScene;
 import nl.han.asteroids.entities.ui.BackgroundAsteroid;
 import nl.han.asteroids.entities.ui.Star;
 import java.util.Random;
 
 /**
- * Toont de top highscores met toetsenbordondersteuning en visuele flair.
+ * Dag Nani! Dit is de HighscoreScene. Hier laten we de topscores zien.
+ * Deze klasse erft van DynamicScene omdat we bewegende sterren en asteroïden in de achtergrond hebben!
+ * Encapsulatie is hier ook toegepast: de backButton en previouslyPressedKeys zijn private.
+ * En via de interface KeyListener kunnen we luisteren naar het toetsenbord, bijvoorbeeld om terug te gaan!
+ * 
+ * Han Yaeger documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
  */
 public class HighscoreScene extends DynamicScene implements KeyListener {
 
@@ -37,15 +39,25 @@ public class HighscoreScene extends DynamicScene implements KeyListener {
     private AsteroidsButton backButton;
     private Set<KeyCode> previouslyPressedKeys = new HashSet<>();
 
+    /**
+     * De constructor van de HighscoreScene.
+     * @param asteroidsGame De instantie van onze hoofdgame.
+     */
     public HighscoreScene(AsteroidsGame asteroidsGame) {
         this.asteroidsGame = asteroidsGame;
     }
 
+    /**
+     * @Override: Hier stellen we de scene basis in (zoals een zwarte achtergrond).
+     */
     @Override
     public void setupScene() {
         setBackgroundColor(Color.BLACK);
     }
 
+    /**
+     * @Override: Hier voegen we onze tekst en knoppen (Entities) toe aan de scene.
+     */
     @Override
     public void setupEntities() {
         previouslyPressedKeys.clear();
@@ -105,6 +117,10 @@ public class HighscoreScene extends DynamicScene implements KeyListener {
         }
     }
 
+    /**
+     * @Override: Luistert naar toetsaanslagen om terug te gaan naar het menu.
+     * @param pressedKeys Huidige ingedrukte toetsen.
+     */
     @Override
     public void onPressedKeysChange(Set<KeyCode> pressedKeys) {
         if ((pressedKeys.contains(KeyCode.ENTER) && !previouslyPressedKeys.contains(KeyCode.ENTER)) ||

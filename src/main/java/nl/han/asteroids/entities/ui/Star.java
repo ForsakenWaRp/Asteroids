@@ -10,11 +10,24 @@ import com.github.hanyaeger.api.entities.SceneBorderCrossingWatcher;
 import java.util.Random;
 
 /**
- * Een eenvoudige ster voor de achtergrond.
- * Beweegt langzaam om een gevoel van diepte (parallax) te geven.
+ * Hey Nani! Dit is een eenvoudige ster voor de achtergrond, puur voor de looks.
+ * 
+ * OOP Principes:
+ * - Overerving: Breidt DynamicCircleEntity uit. Zo weet Han Yaeger dat dit een bewegende cirkel is.
+ * - Interfaces: Implementeert SceneBorderCrossingWatcher zodat de ster terug in het scherm komt als hij erbuiten valt (screen wrap).
+ * 
+ * Han Yaeger Engine:
+ * - DynamicCircleEntity: Een standaardvorm (cirkel) die we kunnen laten bewegen.
+ * - SceneBorderCrossingWatcher: Detecteert wanneer we de rand van de scene (het scherm) raken.
+ * Documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
  */
 public class Star extends DynamicCircleEntity implements SceneBorderCrossingWatcher {
 
+    /**
+     * Maakt een nieuwe ster op een bepaalde laag (parallax effect).
+     * @param initialLocation Startpositie.
+     * @param layer De diepte-laag (1 is ver weg, 3 is dichtbij). Bepaalt grootte en snelheid.
+     */
     public Star(Coordinate2D initialLocation, int layer) {
         super(initialLocation);
         
@@ -30,6 +43,11 @@ public class Star extends DynamicCircleEntity implements SceneBorderCrossingWatc
         setMotion(speed, 180 + (random.nextDouble() * 20 - 10));
     }
 
+    /**
+     * @Override van SceneBorderCrossingWatcher.
+     * Zorgt dat sterren die het scherm verlaten weer aan een andere kant terugkomen.
+     * @param border De geraakte schermrand.
+     */
     @Override
     public void notifyBoundaryCrossing(SceneBorder border) {
         var random = new Random();

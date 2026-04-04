@@ -22,11 +22,16 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-/**
- * Wat de Class doet: Het eerste scherm van de game met toetsenbordbediening en audio-schakelaar.
- */
 import nl.han.asteroids.entities.ui.BackgroundAsteroid;
 
+/**
+ * Hallo Nani! Dit is de MainMenuScene. Het allereerste scherm dat je ziet als je de game opstart!
+ * Net als GameScene en HighscoreScene erft het van DynamicScene (want de sterren bewegen).
+ * Het toont knoppen waarmee je het spel kunt starten of de highscores kunt bekijken.
+ * We gebruiken Encapsulatie voor de lijsten en knoppen zodat alleen deze klasse ze aanpast.
+ * 
+ * Han Yaeger documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
+ */
 public class MainMenuScene extends DynamicScene implements KeyListener {
 
     private final AsteroidsGame asteroidsGame;
@@ -35,10 +40,17 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
     private Set<KeyCode> previouslyPressedKeys = new HashSet<>();
     private AsteroidsButton audioButton;
 
+    /**
+     * Constructor van het hoofdmenu.
+     * @param asteroidsGame De referentie naar de hoofdgame.
+     */
     public MainMenuScene(AsteroidsGame asteroidsGame) {
         this.asteroidsGame = asteroidsGame;
     }
 
+    /**
+     * @Override: Stelt de scène in en start de epische menu muziek.
+     */
     @Override
     public void setupScene() {
         setBackgroundColor(Color.BLACK);
@@ -46,6 +58,9 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
         SoundManager.play(SoundManager.SoundType.MENU_THEME);
     }
 
+    /**
+     * @Override: Plaatst de titel, de knoppen en de achtergrond op de scene.
+     */
     @Override
     public void setupEntities() {
         menuButtons.clear();
@@ -142,6 +157,9 @@ public class MainMenuScene extends DynamicScene implements KeyListener {
         }
     }
 
+    /**
+     * @Override: Voor de KeyListener, om met de pijltjestoetsen door het menu te navigeren.
+     */
     @Override
     public void onPressedKeysChange(Set<KeyCode> pressedKeys) {
         if (pressedKeys.contains(KeyCode.UP) && !previouslyPressedKeys.contains(KeyCode.UP)) {
