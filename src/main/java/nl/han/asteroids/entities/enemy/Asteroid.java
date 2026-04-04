@@ -82,15 +82,39 @@ public class Asteroid extends BaseEnemy implements SceneBorderCrossingWatcher, C
     /**
      * @Override van Collided.
      * Wordt door Han Yaeger aangeroepen als we met andere objecten (Colliders) botsen.
+     * We gebruiken hier de Stelling van Pythagoras om te kijken of de cirkels elkaar écht raken.
      * @param collidingObjects De lijst van objecten die we raken.
      */
     @Override
     public void onCollision(List<Collider> collidingObjects) {
         if (pauseStateProvider.isPaused()) return;
+        
+        // Bereken ons eigen middelpunt (aangezien de asteroid een vierkante sprite is, is het midden + de helft)
+        double myCenterX = getAnchorLocation().getX() + (getWidth() / 2);
+        double myCenterY = getAnchorLocation().getY() + (getHeight() / 2);
+        double myRadius = getWidth() / 2;
+
         for (Collider col : collidingObjects) {
-            this.onHitBy(col);
-            if (col instanceof nl.han.asteroids.interfaces.Hittable hittable) {
-                hittable.onHitBy(this);
+            // Bereken middelpunt van het object dat ons raakt
+            double otherCenterX = col.getBoundingBox().getMinX() + (col.getBoundingBox().getWidth() / 2);
+            double otherCenterY = col.getBoundingBox().getMinY() + (col.getBoundingBox().getHeight() / 2);
+            
+            // Gebruik een geschatte radius voor het andere object (helft van zijn breedte)
+            double otherRadius = col.getBoundingBox().getWidth() / 2;
+
+            // Stelling van Pythagoras: a^2 + b^2 = c^2
+            double dx = myCenterX - otherCenterX;
+            double dy = myCenterY - otherCenterY;
+            double distanceSquared = (dx * dx) + (dy * dy);
+            
+            // Controleer of de afstand tussen de middelpunten kleiner is dan de twee radiussen bij elkaar
+            double radiusSum = myRadius + otherRadius;
+            if (distanceSquared < (radiusSum * radiusSum)) {
+                // Het is een échte ronde hit!
+                this.onHitBy(col);
+                if (col instanceof nl.han.asteroids.interfaces.Hittable hittable) {
+                    hittable.onHitBy(this);
+                }
             }
         }
     }
