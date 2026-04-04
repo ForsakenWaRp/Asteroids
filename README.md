@@ -12,7 +12,7 @@ Het project is opgebouwd rondom de **Yaeger Game Engine**, waarbij een strikte s
 
 | Module | Verantwoordelijkheid |
 | :--- | :--- |
-| **`config`** | Beheer van globale constanten en configuratie-instellingen (`GameConstants`). Alles rondom snelheden, spawn-kansen en scores is hier gecentraliseerd. |
+| **`config`** | Beheer van globale constanten en configuratie-instellingen ([`GameConstants`](src/main/java/nl/han/asteroids/config/GameConstants.java)). Alles rondom snelheden, spawn-kansen en scores is hier gecentraliseerd. |
 | **`entities`** | Implementatie van domeinobjecten (speler, vijanden, projectielen). |
 | **`factories`** | Bevat de `EnemyFactory` voor het centraal instantiëren van vijanden (Factory Pattern). |
 | **`managers`** | Afhandeling van object-levenscycli (spawning, scoring, collision delegatie). Let op: elke manager heeft één specifieke taak (Single Responsibility Principle). |
@@ -122,3 +122,70 @@ Dit project wordt beheerd met **Maven**.
 
 ---
 *Documentatie opgesteld voor educatieve doeleinden. Succes met de verdere ontwikkeling!*
+
+---
+
+# 🐸 Speciale Nani Editie: Hoe start een Yaeger Game op?
+
+Hé Nani! Omdat ik hoorde dat je bezig wilt gaan met een **Frogger** game (super vet idee trouwens!), heb ik hieronder nog even haarfijn uitgelegd hoe een game in Han Yaeger precies opstart. 
+
+Als je straks je eigen project aanmaakt (bijvoorbeeld `NaniFrogger`), dan zul je altijd met twee hele belangrijke "Start" klassen te maken krijgen. In dit Asteroids project zijn dat `App.java` en `AsteroidsGame.java`. Hier is precies wat ze doen:
+
+### 1. `App.java` (De onzichtbare motor)
+Dit is het *Entry Point* van de Java applicatie. Oftewel: hier begint Java met lezen.
+```java
+public class App {
+    public static void main(String[] args) {
+        AsteroidsGame.main(args);
+    }
+}
+```
+**Wat doet dit en waarom?**
+Sinds Java 11 is "JavaFX" (de grafische motor waar Han Yaeger op draait) niet meer standaard ingebouwd in Java. Als we de game direct via de `AsteroidsGame` klasse zouden opstarten, raakt Java in de war en krijg je een foutmelding over ontbrekende modules. 
+Door een hele simpele `App` klasse te maken die alléén maar de game doorstart, fopt dit eigenlijk het systeem ("omzeilt een module-check") waardoor de game zonder foutmeldingen opstart.
+**Voor jouw Frogger game:** Je maakt straks een `App.java` aan en zet daar letterlijk in: `FroggerGame.main(args);`. Daarna hoef je er nóóit meer naar te kijken!
+
+### 2. `AsteroidsGame.java` (De Regisseur van de Engine)
+Dit is het hart van je applicatie. Deze klasse is verplicht om de `YaegerGame` klasse te *extenden*. Voor jou zal dit straks `public class FroggerGame extends YaegerGame` zijn.
+
+Deze klasse doet eigenlijk maar twee hele belangrijke dingen:
+
+**A. `setupGame()`**
+Hier stel je de "fysieke" eigenschappen van je gamevenster in.
+*   Je roept `setGameTitle("Nani's Frogger")` aan om de titelbalk van het Windows/Mac scherm in te stellen.
+*   Je roept `setSize(new Size(800, 600))` aan om te bepalen hoe groot je spel is.
+
+**B. `setupScenes()`**
+Han Yaeger werkt met *Scenes* (vergelijk het met dia's of toneelstukken). Je hebt bijvoorbeeld een Hoofdmenu, een Game-scherm en een Game-Over scherm. 
+In `setupScenes()` vertel je de regisseur (YaegerGame) welke scènes er allemaal bestaan in jouw spel.
+```java
+    @Override
+    public void setupScenes() {
+        addScene(0, new MainMenuScene(this));
+        addScene(1, new FroggerGameScene(this)); // Jouw level!
+        addScene(2, new GameOverScene(this));
+    }
+```
+Wanneer je later in je game af bent (de kikker is aangereden), kun je aan deze "regisseur" vragen om een andere scène op te zetten via: `setActiveScene(2);`.
+
+**De Interface Tip (`PauseStateProvider`)**
+In ons Asteroids project zie je dat deze klasse ook `implements PauseStateProvider` heeft en methodes zoals `isPaused()` bevat. Omdat *álle* scenes (en dus ook vijanden) aan deze game gekoppeld zijn, gebruiken we deze `AsteroidsGame` (of straks `FroggerGame`) als centrale plek om bij te houden of het hele spel op pauze staat en wat de eindscore was.
+
+### 3. Wat is de Han Yaeger Engine eigenlijk?
+Voordat we verder de code in duiken: wat is Han Yaeger nou precies? 
+Han Yaeger is een **2D Game Engine** geschreven in Java, speciaal gebouwd voor en door studenten/docenten (o.a. van de HAN). Het draait op de achtergrond op **JavaFX**, een framework om grafische applicaties te bouwen. 
+Waarom gebruiken we het? Als je in pure JavaFX een game wil maken, moet je zelf een *Game Loop* schrijven (een oneindige loop die 60 keer per seconde het scherm updatet), zelf botsingen berekenen en zelf sprites (afbeeldingen) inladen. Yaeger doet dit allemaal al voor je! Het geeft je kant-en-klare klassen (zoals `YaegerGame`, `DynamicScene`, en `DynamicSpriteEntity`) zodat jij je alleen maar hoeft bezig te houden met het maken van je Frogger levels!
+
+### 4. Wat betekent `extends`?
+Wanneer je een nieuwe klasse maakt, zoals `public class FroggerGame extends YaegerGame`, dan maak je gebruik van **Overerving (Inheritance)**. 
+Met `extends` zeg je eigenlijk: *"Mijn nieuwe `FroggerGame` is in de basis een `YaegerGame`, maar ik ga er nog mijn eigen functionaliteit (mijn levels en logica) aan toevoegen."* 
+Je hoeft de ingewikkelde code voor het opstarten van een JavaFX scherm niet meer zelf te schrijven, want je "erft" al die functionaliteit gratis en voor niets over van de `YaegerGame` klasse uit de engine. Een auto in jouw game zou bijvoorbeeld `public class Auto extends DynamicSpriteEntity` kunnen zijn: je auto kan hierdoor (via de methodes van de superklasse) direct bewegen en op het scherm getekend worden!
+
+### 5. Waarom staat er overal `@Override`?
+Je zult zien dat methodes zoals `setupGame()` en `setupScenes()` een `@Override` tag boven zich hebben staan. Wat betekent dat?
+*   **Wat doet het?** Omdat jouw klasse overerft van een superklasse (zoals `YaegerGame`), bestaan deze methodes vaak al in de originele engine-code. Door `@Override` te typen, vertel je aan Java: *"Negeer de originele versie van deze methode uit de engine, en gebruik in plaats daarvan mijn eigen, aangepaste versie hieronder!"*
+*   **Wanneer is het verplicht?** Overschrijven (overriden) is **verplicht** als de originele klasse een methode **`abstract`** heeft gemaakt (zoals `setupGame()` in Yaeger). Een abstracte methode in Java betekent eigenlijk: "Ik heb dit gedrag bedacht, maar nog niet ingevuld. Iedere klasse die mij `extends` MÓET dit zelf invullen."
+*   **Wanneer is het optioneel?** Als de originele klasse al een werkende standaard-implementatie heeft (zoals een `explicitUpdate()` die standaard gewoon niets doet), mag je hem overriden om er zelf functionaliteit aan toe te voegen, maar je bént niet verplicht om de methode in je klasse op te nemen als je hem niet nodig hebt. De `@Override` annotatie is overigens technisch gezien niet verplicht, maar wél heel erg belangrijk: als je een typfout maakt in de methodenaam (bijv. `setupScenees()` in plaats van `setupScenes()`), waarschuwt Java je direct dat je eigenlijk niks aan het overriden bent!
+
+Succes met bouwen! 🚀🐸
+
