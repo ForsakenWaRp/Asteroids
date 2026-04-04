@@ -21,10 +21,16 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Vertegenwoordigt de UFO vijand.
+ * Hey Nani! Deze klasse vertegenwoordigt de UFO vijand.
  * 
  * OOP Principes:
- * - Overerving: Breidt BaseEnemy uit.
+ * - Overerving (Inheritance): Breidt BaseEnemy uit.
+ * - Interfaces: Implementeert TimerContainer voor herhalende acties (schieten), en Collider/Collided voor botsingen.
+ * 
+ * Han Yaeger Engine:
+ * - TimerContainer: Laat ons timers toevoegen die na een bepaalde tijd afgaan (bijvoorbeeld om te schieten).
+ * - SceneBorderCrossingWatcher: Laat ons reageren als we de rand van het scherm bereiken.
+ * Documentatie: https://han-yaeger.github.io/yaeger/hanyaeger/module-summary.html
  */
 public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collided, Collider, TimerContainer {
 
@@ -33,6 +39,13 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
     private final Random random = new Random();
     private boolean soundPaused = false;
 
+    /**
+     * Maakt een nieuwe UFO aan.
+     * @param initialLocation Startpositie (x, y)
+     * @param projectileManager Manager voor het afvuren van lasers
+     * @param enemyManager Manager voor alle vijanden
+     * @param pauseStateProvider Om te controleren of het spel pauzeert
+     */
     public Ufo(Coordinate2D initialLocation, ProjectileManager projectileManager, EnemyManager enemyManager, PauseStateProvider pauseStateProvider) {
         super("sprites/ufo.png", initialLocation, new Size(96, 80), enemyManager, pauseStateProvider);
         this.projectileManager = projectileManager;
@@ -42,6 +55,10 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         SoundManager.play(SoundManager.SoundType.UFO_ENGINE);
     }
 
+    /**
+     * @Override van TimerContainer.
+     * Hier definiëren we een timer om de UFO periodiek te laten schieten.
+     */
     @Override
     public void setupTimers() {
         addTimer(new Timer(SHOT_INTERVAL) {
@@ -56,6 +73,10 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         });
     }
 
+    /**
+     * @Override van BaseEnemy.
+     * Zorgt ervoor dat het geluid weer aangaat als we uit pauze komen.
+     */
     @Override
     protected void updateEnemy(long timestamp) {
         if (soundPaused) {
@@ -64,6 +85,10 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         }
     }
 
+    /**
+     * @Override van de standaard Han Yaeger update loop (UpdateExposer).
+     * Controleert elke game-tick of het geluid gepauzeerd moet worden.
+     */
     @Override
     public void explicitUpdate(long timestamp) {
         super.explicitUpdate(timestamp);
@@ -74,6 +99,10 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         }
     }
 
+    /**
+     * @Override van SceneBorderCrossingWatcher.
+     * Verwijdert de UFO als deze het scherm aan de rechterkant verlaat.
+     */
     @Override
     public void notifyBoundaryCrossing(SceneBorder border) {
         if (border == SceneBorder.RIGHT) {
@@ -82,6 +111,10 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         }
     }
 
+    /**
+     * @Override van Collided.
+     * Afhandeling van botsingen met andere objecten.
+     */
     @Override
     public void onCollision(List<Collider> collidingObjects) {
         if (pauseStateProvider.isPaused()) return;
@@ -94,6 +127,9 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         }
     }
 
+    /**
+     * Kijkt of we geraakt worden door een laser.
+     */
     @Override
     public void onHitBy(Collider collider) {
         if (collider instanceof Laser laser && !laser.isEnemyLaser()) {
@@ -101,6 +137,9 @@ public class Ufo extends BaseEnemy implements SceneBorderCrossingWatcher, Collid
         }
     }
 
+    /**
+     * Vernietigt de UFO en stopt de geluiden.
+     */
     public void destroy() {
         SoundManager.stop(SoundManager.SoundType.UFO_ENGINE);
         enemyManager.onUfoDestroyed(this);
